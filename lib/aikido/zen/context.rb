@@ -126,7 +126,11 @@ module Aikido::Zen
     end
 
     def unsafe_path?(filepath)
-      normalized_filepath = Pathname.new(filepath).cleanpath.to_s.downcase
+      normalized_filepath = File.expand_path(filepath)
+      if !normalized_filepath.start_with?(File.expand_path("/") + File::SEPARATOR)
+        raise "Invalid path: path traversal detected in #{filepath}"
+      end
+      normalized_filepath = normalized_filepath.downcase
 
       Scanners::PathTraversal::DANGEROUS_PATH_PARTS.each do |dangerous_path_part|
         return true if normalized_filepath.include?(dangerous_path_part)
